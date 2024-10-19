@@ -1,0 +1,36 @@
+service:
+  description: handle data series into signals
+
+server:
+  port: 8088
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/assets
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  liquibase:
+    enabled: false
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+  jpa:
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      ddl-auto: create-drop
+
+signal:
+  live-time-minutes: 30
+
+cron:
+  disable: "-"
+  task:
+    2H: "0 */10 9-23 * * MON-FRI"
+    4H: "0 */10 9-23 * * MON-FRI"
+    1D: "0 */20 9-23 * * MON-FRI"
+    1W: "0 0 9-23 * * MON-FRI"
