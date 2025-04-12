@@ -4,7 +4,7 @@ import org.ta4j.core.Bar;
 import org.ta4j.core.BaseBar;
 import org.ta4j.core.num.DecimalNum;
 import org.ta4j.core.num.Num;
-import pab.ta.handler.base.asset.CandleInterval;
+import pab.ta.handler.base.lib.asset.CandleInterval;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;

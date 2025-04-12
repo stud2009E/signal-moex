@@ -2,9 +2,9 @@ package pab.ta.handler.moex.provider;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
-import pab.ta.handler.base.asset.AssetInfo;
-import pab.ta.handler.base.asset.AssetType;
-import pab.ta.handler.base.provider.AssetInfoProvider;
+import pab.ta.handler.base.lib.asset.AssetInfo;
+import pab.ta.handler.base.lib.asset.AssetType;
+import pab.ta.handler.base.lib.asset.provider.AssetInfoProvider;
 import pab.ta.handler.moex.provider.util.MoexUtil;
 import ru.exdata.moex.Request;
 import ru.exdata.moex.response.Response;
@@ -32,7 +32,7 @@ public class ShareMoexProvider extends AssetInfoMoexProviderBase implements Asse
                         "securities.columns", "SECID,NAME,LISTLEVEL")),
                 AssetType.SHARE)
                 .stream()
-                .filter(info -> !String.valueOf(info.properties().get("listlevel")).equals("3"))
+                .filter(info -> !String.valueOf(info.getProperties().get("listlevel")).equals("3"))
                 .toList();
     }
 }

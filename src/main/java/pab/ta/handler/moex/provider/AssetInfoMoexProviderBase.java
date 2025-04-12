@@ -1,8 +1,8 @@
 package pab.ta.handler.moex.provider;
 
-import pab.ta.handler.base.asset.AssetInfo;
-import pab.ta.handler.base.asset.AssetType;
-import pab.ta.handler.base.asset.BaseAssetInfo;
+import pab.ta.handler.base.lib.asset.AssetInfo;
+import pab.ta.handler.base.lib.asset.AssetType;
+import pab.ta.handler.base.lib.asset.BaseAssetInfo;
 import ru.exdata.moex.IssClient;
 import ru.exdata.moex.IssClientBuilder;
 import ru.exdata.moex.response.Block;

@@ -1,7 +1,7 @@
 package pab.ta.handler.moex.provider;
 
-import pab.ta.handler.base.asset.AssetInfo;
-import pab.ta.handler.base.provider.AssetInfoSearchProvider;
+import pab.ta.handler.base.lib.asset.AssetInfo;
+import pab.ta.handler.base.lib.asset.provider.AssetInfoSearchProvider;
 import ru.exdata.moex.Request;
 import ru.exdata.moex.response.Response;
 

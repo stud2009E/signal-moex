@@ -4,26 +4,6 @@ service:
 server:
   port: 8088
 
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5433/assets
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
-
-  liquibase:
-    enabled: false
-    change-log: classpath:db/changelog/db.changelog-master.xml
-
-  jpa:
-    open-in-view: false
-    show-sql: false
-    properties:
-      hibernate:
-        format_sql: true
-    hibernate:
-      ddl-auto: create-drop
-
 signal:
   live-time-minutes: 30
 

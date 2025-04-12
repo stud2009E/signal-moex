@@ -5,11 +5,10 @@ import org.ta4j.core.Bar;
 import org.ta4j.core.BarSeries;
 import org.ta4j.core.BaseBarSeriesBuilder;
 import org.ta4j.core.num.DecimalNum;
-import pab.ta.handler.base.asset.AssetInfo;
-import pab.ta.handler.base.asset.CandleInterval;
-import pab.ta.handler.base.asset.SeriesIdentity;
-import pab.ta.handler.base.asset.TimeFrame;
-import pab.ta.handler.base.provider.DataProvider;
+import pab.ta.handler.base.lib.asset.AssetInfo;
+import pab.ta.handler.base.lib.asset.CandleInterval;
+import pab.ta.handler.base.lib.asset.TimeFrame;
+import pab.ta.handler.base.lib.asset.provider.DataProvider;
 import pab.ta.handler.moex.provider.util.IntervalConverter;
 import pab.ta.handler.moex.provider.util.MoexUtil;
 import ru.exdata.moex.IssClient;
@@ -51,15 +50,13 @@ public class ProviderMOEX implements DataProvider {
     }
 
     @Override
-    public BarSeries getSeries(SeriesIdentity identity) {
-        AssetInfo info = identity.info();
-        TimeFrame tf = identity.tf();
+    public BarSeries getSeries(AssetInfo info, TimeFrame tf) {
 
-        return switch (info.type()) {
-            case SHARE -> getShareSeries(info, tf.from(), tf.to(), tf.interval());
-            case INDEX -> getIndexSeries(info, tf.from(), tf.to(), tf.interval());
-            case FUTURE -> getFutureSeries(info, tf.from(), tf.to(), tf.interval());
-            case CURRENCY -> getCurrencySeries(info, tf.from(), tf.to(), tf.interval());
+        return switch (info.getType()) {
+            case SHARE -> getShareSeries(info, tf.getFrom(), tf.getTo(), tf.getInterval());
+            case INDEX -> getIndexSeries(info, tf.getFrom(), tf.getTo(), tf.getInterval());
+            case FUTURE -> getFutureSeries(info, tf.getFrom(), tf.getTo(), tf.getInterval());
+            case CURRENCY -> getCurrencySeries(info, tf.getFrom(), tf.getTo(), tf.getInterval());
         };
     }
 
@@ -79,7 +76,7 @@ public class ProviderMOEX implements DataProvider {
                 .engines().engine(MoexUtil.Engine.stock)
                 .markets().market(MoexUtil.Market.shares)
                 .boards().board(MoexUtil.Board.tqbr)
-                .securities().security(data.ticker())
+                .securities().security(data.getTicker())
                 .candles().format().json();
 
         return handleRequest(request, data, from, to, candleInterval);
@@ -102,7 +99,7 @@ public class ProviderMOEX implements DataProvider {
                 .engines().engine(MoexUtil.Engine.futures)
                 .markets().market(MoexUtil.Market.forts)
                 .boards().board(MoexUtil.Board.rfud)
-                .securities().security(data.ticker())
+                .securities().security(data.getTicker())
                 .candles().format().json();
 
         return handleRequest(request, data, from, to, candleInterval);
@@ -122,7 +119,7 @@ public class ProviderMOEX implements DataProvider {
                 .engines().engine(MoexUtil.Engine.currency)
                 .markets().market(MoexUtil.Market.index)
                 .boards().board(MoexUtil.Board.fixi)
-                .securities().security(data.ticker())
+                .securities().security(data.getTicker())
                 .candles().format().json();
 
         return handleRequest(request, data, from, to, candleInterval);
@@ -143,7 +140,7 @@ public class ProviderMOEX implements DataProvider {
                 .engines().engine(MoexUtil.Engine.stock)
                 .markets().market(MoexUtil.Market.index)
                 .boards().board(MoexUtil.Board.sndx)
-                .securities().security(data.ticker())
+                .securities().security(data.getTicker())
                 .candles().format().json();
 
         return handleRequest(request, data, from, to, candleInterval);
@@ -158,7 +155,7 @@ public class ProviderMOEX implements DataProvider {
                 "interval", converter.moexInterval()));
 
         BarSeries series = new BaseBarSeriesBuilder()
-                .withName(data.ticker() + " " + candleInterval.name())
+                .withName(data.getTicker() + " " + candleInterval.name())
                 .withNumTypeOf(DecimalNum.class)
                 .build();
 
