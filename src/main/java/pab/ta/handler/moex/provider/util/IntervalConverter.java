@@ -37,19 +37,12 @@ public class IntervalConverter {
             case HOUR_4 -> "60";
             case DAY -> "24";
             case WEEK -> "7";
-            case MONTH -> null;
+            case MONTH -> "31";
         };
     }
 
     @Override
     public String toString() {
-        return switch (interval) {
-            case HOUR_1 -> "1h";
-            case HOUR_2 -> "2h";
-            case HOUR_4 -> "4h";
-            case DAY -> "1d";
-            case WEEK -> "1w";
-            case MONTH -> null;
-        };
+        return interval.toString();
     }
 }

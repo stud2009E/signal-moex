@@ -17,7 +17,6 @@ import ru.exdata.moex.Request;
 import ru.exdata.moex.response.Block;
 import ru.exdata.moex.response.Response;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Comparator;
@@ -53,10 +52,10 @@ public class ProviderMOEX implements DataProvider {
     public BarSeries getSeries(AssetInfo info, TimeFrame tf) {
 
         return switch (info.getType()) {
-            case SHARE -> getShareSeries(info, tf.getFrom(), tf.getTo(), tf.getInterval());
-            case INDEX -> getIndexSeries(info, tf.getFrom(), tf.getTo(), tf.getInterval());
-            case FUTURE -> getFutureSeries(info, tf.getFrom(), tf.getTo(), tf.getInterval());
-            case CURRENCY -> getCurrencySeries(info, tf.getFrom(), tf.getTo(), tf.getInterval());
+            case SHARE -> getShareSeries(info, tf);
+            case INDEX -> getIndexSeries(info, tf);
+            case FUTURE -> getFutureSeries(info, tf);
+            case CURRENCY -> getCurrencySeries(info, tf);
         };
     }
 
@@ -65,13 +64,11 @@ public class ProviderMOEX implements DataProvider {
      * Example:
      * <a href="https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities/SBER/candles.xml">SBER</a>
      *
-     * @param data           asset
-     * @param from           moment of start
-     * @param to             moment of end
-     * @param candleInterval interval between candles (1w, 1d, 4h)
+     * @param data asset
+     * @param tf   time frame
      * @return series of requested data
      */
-    protected BarSeries getShareSeries(AssetInfo data, LocalDateTime from, LocalDateTime to, CandleInterval candleInterval) {
+    protected BarSeries getShareSeries(AssetInfo data, TimeFrame tf) {
         Request<Response> request = client.iss()
                 .engines().engine(MoexUtil.Engine.stock)
                 .markets().market(MoexUtil.Market.shares)
@@ -79,7 +76,7 @@ public class ProviderMOEX implements DataProvider {
                 .securities().security(data.getTicker())
                 .candles().format().json();
 
-        return handleRequest(request, data, from, to, candleInterval);
+        return handleRequest(request, data, tf);
     }
 
 
@@ -88,13 +85,11 @@ public class ProviderMOEX implements DataProvider {
      * Example:
      * <a href="https://iss.moex.com/iss/engines/futures/markets/forts/boards/RFUD/securities/NAZ4/candles.xml">NASD-12.24</a>
      *
-     * @param data           asset
-     * @param from           moment of start
-     * @param to             moment of end
-     * @param candleInterval interval between candles (1w, 1d, 4h)
+     * @param data asset
+     * @param tf   time frame
      * @return series of requested data
      */
-    protected BarSeries getFutureSeries(AssetInfo data, LocalDateTime from, LocalDateTime to, CandleInterval candleInterval) {
+    protected BarSeries getFutureSeries(AssetInfo data, TimeFrame tf) {
         Request<Response> request = client.iss()
                 .engines().engine(MoexUtil.Engine.futures)
                 .markets().market(MoexUtil.Market.forts)
@@ -102,19 +97,17 @@ public class ProviderMOEX implements DataProvider {
                 .securities().security(data.getTicker())
                 .candles().format().json();
 
-        return handleRequest(request, data, from, to, candleInterval);
+        return handleRequest(request, data, tf);
     }
 
     /**
      * Currency fixing
      *
-     * @param data           asset
-     * @param from           moment of start
-     * @param to             moment of end
-     * @param candleInterval interval between candles (1w, 1d, 4h)
+     * @param data asset
+     * @param tf   time frame
      * @return bar series
      */
-    protected BarSeries getCurrencySeries(AssetInfo data, LocalDateTime from, LocalDateTime to, CandleInterval candleInterval) {
+    protected BarSeries getCurrencySeries(AssetInfo data, TimeFrame tf) {
         Request<Response> request = client.iss()
                 .engines().engine(MoexUtil.Engine.currency)
                 .markets().market(MoexUtil.Market.index)
@@ -122,20 +115,18 @@ public class ProviderMOEX implements DataProvider {
                 .securities().security(data.getTicker())
                 .candles().format().json();
 
-        return handleRequest(request, data, from, to, candleInterval);
+        return handleRequest(request, data, tf);
     }
 
     /**
      * Example:
      * <a href="https://iss.moex.com/iss/engines/stock/markets/index/boards/SNDX/securities/IMOEX/candles.xml">...</a>
      *
-     * @param data           asset
-     * @param from           moment of start
-     * @param to             moment of end
-     * @param candleInterval interval between candles (1w, 1d, 4h)
+     * @param data asset
+     * @param tf   time frame
      * @return bar series
      */
-    protected BarSeries getIndexSeries(AssetInfo data, LocalDateTime from, LocalDateTime to, CandleInterval candleInterval) {
+    protected BarSeries getIndexSeries(AssetInfo data, TimeFrame tf) {
         Request<Response> request = client.iss()
                 .engines().engine(MoexUtil.Engine.stock)
                 .markets().market(MoexUtil.Market.index)
@@ -143,19 +134,20 @@ public class ProviderMOEX implements DataProvider {
                 .securities().security(data.getTicker())
                 .candles().format().json();
 
-        return handleRequest(request, data, from, to, candleInterval);
+        return handleRequest(request, data, tf);
     }
 
 
-    private BarSeries handleRequest(Request<Response> request, AssetInfo data, LocalDateTime from, LocalDateTime to, CandleInterval candleInterval) {
-        IntervalConverter converter = new IntervalConverter(candleInterval);
+    private BarSeries handleRequest(Request<Response> request, AssetInfo data, TimeFrame tf) {
+        CandleInterval interval = tf.getInterval();
+        IntervalConverter converter = new IntervalConverter(interval);
 
-        Response response = request.get(Map.of("from", from.format(DateTimeFormatter.ISO_LOCAL_DATE),
-                "till", to.format(DateTimeFormatter.ISO_LOCAL_DATE),
+        Response response = request.get(Map.of("from", tf.getFrom().format(DateTimeFormatter.ISO_LOCAL_DATE),
+                "till", tf.getTo().format(DateTimeFormatter.ISO_LOCAL_DATE),
                 "interval", converter.moexInterval()));
 
         BarSeries series = new BaseBarSeriesBuilder()
-                .withName(data.getTicker() + " " + candleInterval.name())
+                .withName(data.getTicker() + " " + interval.name())
                 .withNumTypeOf(DecimalNum.class)
                 .build();
 
@@ -164,13 +156,17 @@ public class ProviderMOEX implements DataProvider {
         }
         Block block = response.findBlock("candles").get();
         List<Bar> barList = block.getData().stream()
-                .map(MoexUtil.getBarMapper(block.getColumns(), candleInterval))
+                .map(MoexUtil.getBarMapper(block.getColumns(), interval))
                 .toList();
 
-        barList = transform1hBar(barList, candleInterval);
+        if (interval == CandleInterval.HOUR_2) {
+            barList = transform1hBar(barList, 2, interval);
+        } else if (interval == CandleInterval.HOUR_4) {
+            barList = transform1hBar(barList, 4, interval);
+        }
 
-        int MINIMAL_SIZE = 30;
-        if (barList.size() < MINIMAL_SIZE) {
+        //minimal size of bar list
+        if (barList.size() < 30) {
             return series;
         }
 
@@ -183,24 +179,12 @@ public class ProviderMOEX implements DataProvider {
      * transform 1h bar list into 2h or 4h bar list
      *
      * @param barList        1h bar list
+     * @param groupCount     bar count for interval
      * @param candleInterval candle interval
      * @return transformed bar list
      */
-    private List<Bar> transform1hBar(List<Bar> barList, CandleInterval candleInterval) {
-
-        if (candleInterval != CandleInterval.HOUR_4 && candleInterval != CandleInterval.HOUR_2) {
-            return barList;
-        }
-
+    private List<Bar> transform1hBar(List<Bar> barList, int groupCount, CandleInterval candleInterval) {
         List<List<Bar>> listListBar = groupBarsDayBorder(barList);
-
-        int groupCount;
-        if (candleInterval == CandleInterval.HOUR_2) {
-            groupCount = 2;
-        } else {
-            groupCount = 4;
-        }
-
 
         return listListBar.stream()
                 .map(listBar -> Lists.partition(listBar, groupCount)
